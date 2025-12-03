@@ -1,5 +1,7 @@
 import sequelize, { testConnection } from './database.js';
 
+import '../models/associations.js'
+
 console.log('Script started!');
 
 const syncDatabase = async () => {
