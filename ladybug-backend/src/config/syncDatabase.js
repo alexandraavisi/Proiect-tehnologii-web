@@ -1,6 +1,6 @@
 import sequelize, { testConnection } from './database.js';
 
-import '../models/User.js'
+import '../models/associations.js'
 
 console.log('Script started!');
 
