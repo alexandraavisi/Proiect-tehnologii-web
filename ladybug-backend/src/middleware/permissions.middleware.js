@@ -1,4 +1,3 @@
-import { use } from 'react';
 import {Project, ProjectMember, Bug } from '../models/associations.js';
 
 const getProjectMembership = async (projectId, userId) => {
