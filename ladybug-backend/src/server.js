@@ -6,8 +6,6 @@ import helmet from 'helmet'
 
 import { testConnection } from './config/database.js'
 
-import authRoutes from './config/database.js'
-
 import authRoutes from './routes/auth.routes.js'
 import projectRoutes from './routes/project.routes.js'
 
@@ -59,9 +57,9 @@ const startServer = async () => {
 
         app.listen(PORT, () => {
             console.log('LadyBug API Server Started');
-            console.log('Server running on: http://localhost:${PORT}')
+            console.log(`Server running on: http://localhost:${PORT}`)
             console.log('Database: Connected')
-            console.log('Started at: ${new Date().toLocaleString()}')
+            console.log(`Started at: ${new Date().toLocaleString()}`)
         });
     }catch (error) {
         console.error(' Failed to start server:', error.message)

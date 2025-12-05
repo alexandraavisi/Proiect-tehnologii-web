@@ -14,7 +14,6 @@ import {
     validateProfileUpdate,
     validatePasswordChange
 } from '../middleware/validations.middleware.js';
-import { SequelizeMethod } from 'sequelize/lib/utils';
 
 const router = express.Router();
 
