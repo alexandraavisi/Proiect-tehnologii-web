@@ -19,17 +19,25 @@ const ProjectMember = sequelize.define('ProjectMember',{
     userId:{
         type: DataTypes.UUID,
         allowNull: false,
+        references:{
+            model: 'users',
+            key: 'id'
+        }
+    },
+    role:{
+        type: DataTypes.ENUM(['MP','TST']),
+        allowNull: false,
         validate:{
             isIn:{
-                args:[['MP', 'TST']],
+                args: [['MP', 'TST']],
                 msg: 'Role must be either MP or TST'
             }
         }
     },
     isCreator:{
-        type: DataTypes.DATE,
+        type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: DataTypes.NOW
+        defaultValue: false
     },
     joinedAt:{
         type: DataTypes.DATE,
