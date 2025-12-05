@@ -60,7 +60,7 @@ const Activity = sequelize.define('Activity', {
     updatedAt: false,
     indexes: [
         {
-            fields: ['projectId', 'cratedAt']
+            fields: ['projectId', 'createdAt']
         },
         {
             fields: ['userId', 'createdAt']
