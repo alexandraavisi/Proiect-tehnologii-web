@@ -243,3 +243,8 @@ export const validateBugAssignment = [
 
     handleValidationErrors
 ];
+
+export const validateProjectIdParam = [
+    param('projectId').isUUID().withMessage('Invalid project ID format'),
+    handleValidationErrors
+];
