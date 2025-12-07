@@ -59,11 +59,12 @@ const Bug=sequelize.define('Bug',{
         }
     },
     status:{
-        type: DataTypes.ENUM('ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'IN_TESTING', 'CLOSED'),
+        type: DataTypes.ENUM('REPORTED' ,'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'IN_TESTING', 'CLOSED'),
         allowNull: false,
+        defaultValue: 'REPORTED',
         validate:{
             isIn:{
-                args:[['ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'IN_TESTING', 'CLOSED']],
+                args:[[ 'REPORTED', 'ASSIGNED', 'IN_PROGRESS', 'RESOLVED', 'IN_TESTING', 'CLOSED']],
                 msg:'Invalid status'
             }
         }

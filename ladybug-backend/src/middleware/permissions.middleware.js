@@ -51,8 +51,19 @@ export const isProjectMember = async (req, res, next) => {
 
 export const isProjectCreator = async (req, res, next) => {
     try {
-        const projectId = req.params.projectId || req.params.id;
+        let projectId = req.params.projectId;
         const userId = req.user.id;
+
+        if (!projectId && req.params.id) {
+            const bug = await Bug.findByPk(req.params.id);
+            if (!bug) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Bug not found'
+                });
+            }
+            projectId = bug.projectId;
+        }
 
         if (!projectId) {
             return res.status(400).json({
@@ -63,18 +74,24 @@ export const isProjectCreator = async (req, res, next) => {
 
         const membership = await getProjectMembership(projectId, userId);
 
-        if (!membership)  {
+        if (!membership) {
             return res.status(403).json({
                 success: false,
                 message: 'Access denied. You are not a member of this project.'
             });
         }
 
-        req.membership = membership;
+        if (!membership.isCreator) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied. Only project creator can perform this action.'
+            });
+        }
 
+        req.membership = membership;
         next();
         
-    }catch(error) {
+    } catch(error) {
         return res.status(500).json({
             success: false,
             message: 'Failed to verify project membership',
