@@ -8,7 +8,6 @@ import { testConnection } from './config/database.js'
 
 import authRoutes from './routes/auth.routes.js'
 import projectRoutes from './routes/project.routes.js'
-import activityRoutes from './routes/activity.routes.js'
 
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.middleware.js'
 
@@ -41,7 +40,6 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
-app.use('/api/activities', activityRoutes)
 
 app.use(notFoundHandler);
 
