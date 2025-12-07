@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.routes.js'
 import projectRoutes from './routes/project.routes.js'
 import bugRoutes from './routes/bug.routes.js'
 import activityRoutes from './routes/activity.routes.js'
+import bugAssignmentRoutes from './routes/bugAssignment.routes.js'
 
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.middleware.js'
 
@@ -44,6 +45,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/bugs', bugRoutes);
 app.use('/api/activities', activityRoutes);
+app.use('/api/bug-assignments', bugAssignmentRoutes);
 
 app.use(notFoundHandler);
 

@@ -248,3 +248,11 @@ export const validateProjectIdParam = [
     param('projectId').isUUID().withMessage('Invalid project ID format'),
     handleValidationErrors
 ];
+
+export const validateAssignmentReject = [
+    body('reason')
+        .trim()
+        .notEmpty().withMessage('Rejection reason is required')
+        .isLength({ min: 10, max: 500 }).withMessage('Reason must be between 10 and 500 characters'),
+    handleValidationErrors
+];
