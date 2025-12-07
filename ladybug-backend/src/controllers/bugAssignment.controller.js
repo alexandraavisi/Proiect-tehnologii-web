@@ -41,7 +41,7 @@ export const acceptAssignment = catchAsync( async (req,res)=>{
            },
            {
             model: ProjectMember,
-            as: 'assignedToMember',
+            as: 'assignee',
             include:[
                 {
                     model: User,
@@ -56,7 +56,7 @@ export const acceptAssignment = catchAsync( async (req,res)=>{
         throw ErrorFactory.notFound('Assignment not found');
     }
 
-    if(assignment.assignedToMember.userId !== userId){
+    if(assignment.assignee.userId !== userId){
         throw ErrorFactory.forbidden('You can only accept assignments assigned to you');
     }
 
@@ -111,7 +111,7 @@ export const rejectAssignment = catchAsync(async (req,res)=>{
             },
             {
                 model: ProjectMember,
-                as: 'assignedToMember',
+                as: 'assignee',
                 include:[
                     {
                         model: User,
@@ -126,7 +126,7 @@ export const rejectAssignment = catchAsync(async (req,res)=>{
         throw ErrorFactory.notFound('Assignment not found');
     }
 
-    if(assignment.assignedToMember.userId !== userId){
+    if(assignment.assignee.userId !== userId){
         throw ErrorFactory.forbidden('You can only reject assignments assigned to you');
     }
 
@@ -200,7 +200,7 @@ export const getMyPendingAssignments = catchAsync(async (req,res)=>{
             },
             {
                 model: ProjectMember,
-                as: 'assignedByMember',
+                as: 'assigner',
                 include:[
                     {
                         model: User,
@@ -266,7 +266,7 @@ export const getMyAssignments = catchAsync(async (req,res)=>{
             },
             {
                 model: ProjectMember,
-                as: 'assignedByMember',
+                as: 'assigner',
                 include:[
                     {
                         model: User,
@@ -287,10 +287,10 @@ export const getMyAssignments = catchAsync(async (req,res)=>{
 });
 
 export const getBugAssignmentHistory = catchAsync(async (req,res)=>{
-    const {bugId} = req.params;
+    const {id} = req.params;
     const userId = req.user.id;
 
-    const bug=await Bug.findByPk(bugId);
+    const bug=await Bug.findByPk(id);
 
     if(!bug){
         throw ErrorFactory.notFound('Bug not found');
@@ -308,11 +308,11 @@ export const getBugAssignmentHistory = catchAsync(async (req,res)=>{
     }
 
     const assignments= await BugAssignment.findAll({
-        where: {bugId},
+        where: {bugId: id},
         include:[
             {
                 model: ProjectMember,
-                as: 'assignedToMember',
+                as: 'assignee',
                 include:[
                     {
                         model: User,
@@ -323,7 +323,7 @@ export const getBugAssignmentHistory = catchAsync(async (req,res)=>{
             },
             {
                 model: ProjectMember,
-                as: 'assignedByMember',
+                as: 'assigner',
                 include:[
                     {
                         model: User,
