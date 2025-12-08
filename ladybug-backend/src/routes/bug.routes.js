@@ -31,13 +31,15 @@ const router = express.Router();
 
 router.post('/', authenticateToken, validateBugCreate, createBug);
 router.get('/', authenticateToken, getAllBugs);
-router.get('/:id', authenticateToken, validateUUID, getBugById);
-router.put('/:id', authenticateToken, validateUUID, validateBugUpdate, canUpdateBug, updateBug);
+
 router.post('/:id/assign', authenticateToken, validateUUID, validateBugAssignment, canAssignBugToOthers, assignBugToMember);
 router.post('/:id/self-assign', authenticateToken, validateUUID, canSelfAssignBug, selfAssignBug);
 router.put('/:id/status', authenticateToken, validateUUID, validateBugStatusUpdate, canUpdateBug, updateBugStatus);
 router.put('/:id/resolve', authenticateToken, validateUUID, canUpdateBug, resolveBug);
 router.put('/:id/close', authenticateToken, validateUUID, canCloseBug, closeBug);
+
+router.get('/:id', authenticateToken, validateUUID, getBugById);
+router.put('/:id', authenticateToken, validateUUID, validateBugUpdate, canUpdateBug, updateBug);
 router.delete('/:id', authenticateToken, validateUUID, isProjectCreator, deleteBug);
 
 export default router;

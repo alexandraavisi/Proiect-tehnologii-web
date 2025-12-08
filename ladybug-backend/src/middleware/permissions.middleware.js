@@ -51,11 +51,13 @@ export const isProjectMember = async (req, res, next) => {
 
 export const isProjectCreator = async (req, res, next) => {
     try {
-        let projectId = req.params.projectId;
+        let projectId = req.params.projectId || req.params.id;
         const userId = req.user.id;
 
-        if (!projectId && req.params.id) {
-            const bug = await Bug.findByPk(req.params.id);
+        const isBugRoute = req.baseUrl && req.baseUrl.includes('/bugs');
+
+        if (isBugRoute && projectId) {
+            const bug = await Bug.findByPk(projectId);
             if (!bug) {
                 return res.status(404).json({
                     success: false,
