@@ -26,11 +26,15 @@ const router = express.Router();
 
 router.post('/', authenticateToken, validateProjectCreate, createProject);
 router.get('/', optionalAuth, getAllProjects);
-router.get('/:id', authenticateToken, validateUUID, isProjectMember, getProjectById);
-router.put('/:id', authenticateToken, validateUUID, validateProjectUpdate, isProjectCreator, updateProject);
-router.delete('/:id', authenticateToken, validateUUID, canDeleteProject, deleteProject);
+
 router.post('/:id/members', authenticateToken, validateUUID, validateAddMember, isProjectCreator, addMember);
 router.delete('/:id/members/:memberId', authenticateToken, isProjectCreator, removeMember);
 router.post('/:id/join', authenticateToken, validateUUID, joinAsTester);
+
+router.get('/:id', authenticateToken, validateUUID, isProjectMember, getProjectById);
+router.put('/:id', authenticateToken, validateUUID, validateProjectUpdate, isProjectCreator, updateProject);
+router.delete('/:id', authenticateToken, validateUUID, canDeleteProject, deleteProject);
+
+
 
 export default router;
