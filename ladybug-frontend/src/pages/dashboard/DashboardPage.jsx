@@ -5,10 +5,7 @@ import { FolderKanban, AlertCircle, Users, Activity, Plus, TrendingUp } from "lu
 import api from '../../services/api';
 
 const DashboardPage = () => {
-    const [stats, setStats] = useState({
-        projects: {total: 0, asCreator: 0, asMemeber: 0},
-        bugs: {reported: 0, assigned: 0, resolved: 0}
-    });
+    const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -16,23 +13,30 @@ const DashboardPage = () => {
     }, []);
 
     const loadStats = async () => {
-        try{
+        try {
             const response = await api.get('/activities/my-stats');
-            setStats(response.data);
+            setStats(response.data.stats || {
+            projects: { total: 0, asCreator: 0, asMember: 0 },
+            bugs: { reported: 0, assigned: 0, resolved: 0 }
+            });
         } catch (error) {
             console.error('Failed to load stats:', error);
+            setStats({
+            projects: { total: 0, asCreator: 0, asMember: 0 },
+            bugs: { reported: 0, assigned: 0, resolved: 0 }
+            });
         } finally {
             setLoading(false);
         }
     };
 
-    const StatCard = ({title, value, icon: Icon, color, subtitle}) => (
+    const StatCard = ({ title, value, icon: Icon, colorClass, subtitle }) => (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition">
             <div className="flex items-center justify-between mb-4">
-                <div className={`w-12 h-12 rounded-lg bg-${color}-100 flex items-center justify-center`}>
-                    <Icon className={`w-6 h-6 text-${color}-600`}/>
-                </div>
-                <TrendingUp className="w-5 h-5 text-green-500"/>
+            <div className={colorClass}>
+                <Icon className="w-6 h-6" />
+            </div>
+            <TrendingUp className="w-5 h-5 text-green-500" />
             </div>
             <h3 className="text-2xl font-bold text-gray-900 mb-1">{value}</h3>
             <p className="text-sm font-medium text-gray-600">{title}</p>
@@ -40,12 +44,12 @@ const DashboardPage = () => {
         </div>
     );
 
-    if(loading) {
+    if (loading || !stats) {
         return (
             <Layout>
-                <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
-                </div>
+            <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+            </div>
             </Layout>
         );
     }
@@ -83,28 +87,28 @@ const DashboardPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard
                     title="Total Projects"
-                    value= {stats.projects.total}
+                    value={stats.projects.total}
                     icon={FolderKanban}
-                    color="blue"
+                    colorClass="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600"
                     subtitle={`${stats.projects.asCreator} created, ${stats.projects.asMember} member`}
                 />
                 <StatCard
                     title="Reported Bugs"
                     value={stats.bugs.reported}
                     icon={AlertCircle}
-                    color="red"
+                    colorClass="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center text-red-600"
                 />
                 <StatCard
                     title="Assigned to Me"
                     value={stats.bugs.assigned}
                     icon={Users}
-                    color="purple"
+                    colorClass="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600"
                 />
                 <StatCard
                     title="Resolved"
                     value={stats.bugs.resolved}
                     icon={Activity}
-                    color="green"
+                    colorClass="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center text-green-600"
                 />
             </div>
 
