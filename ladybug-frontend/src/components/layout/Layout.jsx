@@ -11,7 +11,7 @@ const Layout =({children}) =>{
 
     const navigation = [{name: 'Dashboard', href:'/dashboard', icon:LayoutDashboard},
         {name:'Projects', href:'/projects', icon:FolderKanban},
-        {name: 'My Bugs', href:'/my-bugs', icon:AlertCircle},
+        {name: 'My Bugs', href:'/bugs', icon:AlertCircle},
     ];
 
     const handleLogout=() =>{
