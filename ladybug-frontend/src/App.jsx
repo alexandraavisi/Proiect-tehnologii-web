@@ -15,7 +15,7 @@ function App() {
             <Route path="/register" element={<RegisterPage/>}/>
 
             <Route path="/dashboard" element={<ProtectedRoute><DashboardPage/></ProtectedRoute>}/>
-            <Route path="projects" element={<ProtectedRoute><ProjectPage /></ProtectedRoute>}/>
+            <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>}/>
             
             <Route path="/" element={<Navigate to="/dashboard" replace/>}/>
             <Route path="*" element={<Navigate to="/dashboard" replace/>}/>
