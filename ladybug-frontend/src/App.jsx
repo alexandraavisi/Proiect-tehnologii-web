@@ -8,6 +8,8 @@ import ProjectsPage from "./pages/projects/ProjectsPage";
 import ProjectDetailsPage from "./pages/projects/ProjectDetailsPage";
 import CreateProjectPage from "./pages/projects/CreateProjectPage";
 import BugsPage from "./pages/bugs/BugsPage";
+import CreateBugPage from "./pages/bugs/CreateBugPage";
+import BugDetailsPage from "./pages/bugs/BugDetailsPage";
 
 function App() {
   return (
@@ -21,7 +23,8 @@ function App() {
             <Route path="/projects" element={<ProtectedRoute><ProjectsPage /></ProtectedRoute>}/>
             <Route path="/projects/new" element={<ProtectedRoute><CreateProjectPage/></ProtectedRoute>}/>
             <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetailsPage/></ProtectedRoute>}/>
-            
+            <Route path="/bugs/new" element={<ProtectedRoute><CreateBugPage/></ProtectedRoute>}/>
+            <Route path="/bugs/:id" element={<ProtectedRoute><BugDetailsPage/></ProtectedRoute>}/>
             <Route path="/bugs" element={<ProtectedRoute><BugsPage/></ProtectedRoute>}/>
 
             <Route path="/" element={<Navigate to="/dashboard" replace/>}/>
