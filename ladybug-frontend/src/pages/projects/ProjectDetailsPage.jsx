@@ -196,7 +196,7 @@ const ProjectDetailsPage = () => {
                                             : 'bg-green-100 text-green-700'
                                         }`}
                                     >
-                                        {member.role === 'MP' ? 'Manager' : 'Tester'}
+                                        {member.role === 'MP' ? 'Creator' : 'Tester'}
                                     </span>
                                     {member.isCreator &&(
                                         <Crown className="w-4 h-4 text-yellow-500"/>

@@ -6,7 +6,7 @@ import {FolderKanban, ArrowLeft, AlertCircle, Globe, Lock} from 'lucide-react';
 
 const CreateProjectPage=() =>{
     const navigate= useNavigate();
-    const [loading, setLoading]= useState(true);
+    const [loading, setLoading]= useState(false);
     const [error, setError] =useState('');
     const [formData, setFormData]= useState({name:'', description:'', repoUrl:'', isPublic:true,});
 
