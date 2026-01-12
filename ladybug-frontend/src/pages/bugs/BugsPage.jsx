@@ -26,12 +26,16 @@ const BugsPage = () => {
 
     const loadData = async () => {
         try {
+            const params = {};
+            if (filters.projectId) {
+            params.projectId = filters.projectId;
+            }
             const [bugsData, projectsData] = await Promise.all([
-            bugService.getAllBugs({ projectId: filters.projectId }),
-            projectService.getAllProjects(),
-        ]);
-        setBugs(bugsData.bugs || []);
-        setProjects(projectsData.projects || []);
+                bugService.getAllBugs(params),
+                projectService.getAllProjects(),
+            ]);
+            setBugs(bugsData.bugs || []);
+            setProjects(projectsData.projects || []);
         } catch (error) {
             console.error('Failed to load data:', error);
         } finally {

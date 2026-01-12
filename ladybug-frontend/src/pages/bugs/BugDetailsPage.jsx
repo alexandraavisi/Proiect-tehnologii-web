@@ -232,12 +232,12 @@ const BugDetailsPage = () => {
             {bug.githubCommitUrl && (
                 <div>
                 <p className="text-sm text-gray-500 mb-1">Related Commit</p>
-                
+                <a
                     href={bug.githubCommitUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
-                <a>
+                >
                     <Github className="w-4 h-4" />
                     <span className="font-medium">View Commit</span>
                 </a>

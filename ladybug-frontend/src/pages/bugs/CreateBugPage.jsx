@@ -39,7 +39,7 @@ const CreateBugPage = () => {
 
         try {
             const response = await bugService.createBug(formData);
-            navigate(/bugs/${response.bug.id});
+            navigate(`/bugs/${response.bug.id}`);
         }catch(err) {
             setError(err.response?.data?.message || 'Failed to create bug');
         } finally {
