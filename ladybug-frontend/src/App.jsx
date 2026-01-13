@@ -12,6 +12,7 @@ import CreateBugPage from "./pages/bugs/CreateBugPage";
 import BugDetailsPage from "./pages/bugs/BugDetailsPage";
 import MyBugsPage from "./pages/bugs/MyBugsPage";
 import ProfilePage from "./pages/profile/ProfilePage";
+import AssignmentsPage from "./pages/assignments/AssignmentsPage";
 
 function App() {
   return (
@@ -30,7 +31,7 @@ function App() {
             <Route path="/bugs" element={<ProtectedRoute><BugsPage/></ProtectedRoute>}/>
             <Route path="/my-bugs" element={<ProtectedRoute><MyBugsPage/></ProtectedRoute>}/>
             <Route path="/profile" element={<ProtectedRoute><ProfilePage/></ProtectedRoute>}/>
-
+            <Route path="/assignments" element={<ProtectedRoute><AssignmentsPage/></ProtectedRoute>}/>
 
 
             <Route path="/" element={<Navigate to="/dashboard" replace/>}/>
