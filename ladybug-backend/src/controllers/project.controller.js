@@ -114,6 +114,7 @@ export const getAllProjects = catchAsync(async(req, res) => {
 
 export const getProjectById = catchAsync(async (req, res) => {
     const {id} = req.params;
+    const userId = req.user.id;
 
     const project = await Project.findByPk(id, {
         include: [
@@ -145,6 +146,17 @@ export const getProjectById = catchAsync(async (req, res) => {
         throw ErrorFactory.notFound('Project not found');
     }
 
+    const membership = await ProjectMember.findOne({
+        where: {
+            projectId: id,
+            userId: userId
+        }
+    });
+
+    if (!membership && !project.isPublic) {
+        throw ErrorFactory.forbidden('Access denied. Project is private.');
+    }
+
     const bugStats = {
         total: project.bugs.length,
         assigned: project.bugs.filter(b => b.status === 'ASSIGNED').length,
@@ -154,9 +166,22 @@ export const getProjectById = catchAsync(async (req, res) => {
         closed: project.bugs.filter(b => b.status === 'CLOSED').length
     };
 
+    const projectData = project.toJSON();
+
+    if (membership) {
+        projectData.membership = {
+            id: membership.id,
+            role: membership.role,
+            isCreator: membership.isCreator,
+            joinedAt: membership.joinedAt
+        };
+    } else {
+        projectData.membership = null;
+    }
+
     res.json({
         success: true,
-        project,
+        project: projectData,
         bugStats
     });
 });

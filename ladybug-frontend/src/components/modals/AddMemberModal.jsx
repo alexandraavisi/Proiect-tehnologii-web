@@ -57,8 +57,7 @@ const AddMemberModal = ({ isOpen, onClose, onAdd, loading }) => {
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2"> Role</label>
                         <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                            <option value="TST">Tester (TST)</option>
-                            <option value="MP">Manager (MP)</option>
+                            <option value="MP">Membru (MP)</option>
                         </select>
                         <p className="text-xs text-gray-500 mt-1"> MP can manage bugs and assign them. TST can report and test bugs.</p>
                     </div>
