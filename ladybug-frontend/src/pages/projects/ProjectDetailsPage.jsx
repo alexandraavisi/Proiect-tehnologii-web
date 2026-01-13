@@ -2,6 +2,8 @@ import { useState, useEffect, use } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import Layout from "../../components/layout/Layout";
 import {projectService} from '../../services/projectService';
+import AddMemberModal from '../../components/modals/AddMemberModal';
+import AssignBugModal from '../../components/modals/AssignBugModal';
 import { ArrowLeft, Users, Bug, Settings, Plus, UserPlus, Globe, Lock, Github, Calendar, Crown, Shield, AlertCircle } from "lucide-react";
 
 const ProjectDetailsPage = () => {
@@ -10,6 +12,8 @@ const ProjectDetailsPage = () => {
     const [project, setProject] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+    const [addMemberLoading, setAddMemberLoading] = useState(false);
 
     useEffect(() => {
         loadProject();
@@ -24,6 +28,41 @@ const ProjectDetailsPage = () => {
         }finally {
             setLoading(false);
         }
+    };
+
+    const handleAddMember = async (memberData) => {
+    setAddMemberLoading(true);
+    try {
+        await projectService.addMember(id, memberData);
+        await loadProject();
+        setShowAddMemberModal(false);
+    } catch (err) {
+        throw err; 
+    } finally {
+        setAddMemberLoading(false);
+    }
+    };
+
+    const handleRemoveMember = async (memberId, memberName) => {
+    if (!window.confirm(`Remove ${memberName} from the project?`)) return;
+
+    try {
+        await projectService.removeMember(id, memberId);
+        await loadProject();
+    } catch (err) {
+        alert(err.response?.data?.message || 'Failed to remove member');
+    }
+    };
+
+    const handleJoinAsTester = async () => {
+    if (!window.confirm('Join this project as a Tester?')) return;
+
+    try {
+        await projectService.joinAsTester(id);
+        await loadProject();
+    } catch (err) {
+        alert(err.response?.data?.message || 'Failed to join project');
+    }
     };
 
     if(loading) {
@@ -121,6 +160,28 @@ const ProjectDetailsPage = () => {
                 </div>
             </div>
 
+            {project.isPublic && !project.membership && (
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+                <div className="flex items-center justify-between">
+                <div>
+                    <h3 className="text-lg font-bold text-blue-900 mb-1">
+                    Join this project
+                    </h3>
+                    <p className="text-sm text-blue-700">
+                    This is a public project. You can join as a Tester to report and test bugs.
+                    </p>
+                </div>
+                <button
+                    onClick={handleJoinAsTester}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition whitespace-nowrap"
+                >
+                    <UserPlus className="w-5 h-5" />
+                    Join as Tester
+                </button>
+                </div>
+            </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center gap-3 mb-2">
@@ -165,46 +226,56 @@ const ProjectDetailsPage = () => {
                 <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-bold text-gray-900">Team Members</h2>
-                        {isCreator&& (
-                            <button className="flex items-center gap-2 px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">
-                                <UserPlus className="w-4 h-4"/>
+                        {isCreator && (
+                            <button
+                                onClick={() => setShowAddMemberModal(true)}
+                                className="flex items-center gap-2 px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700"
+                            >
+                                <UserPlus className="w-4 h-4" />
                                 Add Member
                             </button>
                         )}
                     </div>
 
-                    <div className="space-y-3">
-                        {project.members?.map((member) => (
-                            <div
-                                key={member.id}
-                                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
-                                        {member.user.name.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <p className="font-medium text-gray-900">{member.user.name}</p>
-                                        <p className="text-sm text-gray-500">{member.user.email}</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span
-                                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                            member.role === 'MP'
-                                            ? 'bg-blue-100 text-blue-700'
-                                            : 'bg-green-100 text-green-700'
-                                        }`}
-                                    >
-                                        {member.role === 'MP' ? 'Creator' : 'Tester'}
-                                    </span>
-                                    {member.isCreator &&(
-                                        <Crown className="w-4 h-4 text-yellow-500"/>
-                                    )}
-                                </div>
+                    {project.members?.map((member) => (
+                        <div
+                            key={member.id}
+                            className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                        >
+                            <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
+                                {member.user.name.charAt(0).toUpperCase()}
                             </div>
+                            <div>
+                                <p className="font-medium text-gray-900">{member.user.name}</p>
+                                <p className="text-sm text-gray-500">{member.user.email}</p>
+                            </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                            <span
+                                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                member.role === 'MP'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'bg-green-100 text-green-700'
+                                }`}
+                            >
+                                {member.role === 'MP' ? 'Manager' : 'Tester'}
+                            </span>
+                            {member.isCreator && (
+                                <Crown className="w-4 h-4 text-yellow-500" />
+                            )}
+                            {isCreator && !member.isCreator && (
+                                <button
+                                onClick={() => handleRemoveMember(member.id, member.user.name)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                                title="Remove member"
+                                >
+                                <UserMinus className="w-4 h-4" />
+                                </button>
+                            )}
+                            </div>
+                        </div>
                         ))}
-                    </div>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -227,6 +298,13 @@ const ProjectDetailsPage = () => {
                     </div>
                 </div>
             </div>
+
+            <AddMemberModal
+                isOpen={showAddMemberModal}
+                onClose={() => setShowAddMemberModal(false)}
+                onAdd={handleAddMember}
+                loading={addMemberLoading}
+            />
         </Layout>
     );
 };
