@@ -4,11 +4,13 @@ import Layout from "../../components/layout/Layout";
 import {projectService} from '../../services/projectService';
 import AddMemberModal from '../../components/modals/AddMemberModal';
 import AssignBugModal from '../../components/modals/AssignBugModal';
-import { ArrowLeft, Users, Bug, Settings, Plus, UserPlus, Globe, Lock, Github, Calendar, Crown, Shield, AlertCircle } from "lucide-react";
+import { ArrowLeft, Users, Bug, Settings, Plus, UserPlus, UserMinus, Globe, Lock, Github, Calendar, Crown, Shield, AlertCircle } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const ProjectDetailsPage = () => {
     const {id} = useParams();
     const navigate = useNavigate();
+    const {user} = useAuth();
     const [project, setProject] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -93,6 +95,10 @@ const ProjectDetailsPage = () => {
     }
 
     const isCreator = project.membership?.isCreator;
+
+    console.log('Is Creator:', isCreator);      
+    console.log('Project:', project);          
+    console.log('Membership:', project.membership);  
 
     return(
         <Layout>
@@ -259,7 +265,7 @@ const ProjectDetailsPage = () => {
                                     : 'bg-green-100 text-green-700'
                                 }`}
                             >
-                                {member.role === 'MP' ? 'Manager' : 'Tester'}
+                                {member.role === 'MP' ? 'Membru' : 'Tester'}
                             </span>
                             {member.isCreator && (
                                 <Crown className="w-4 h-4 text-yellow-500" />
