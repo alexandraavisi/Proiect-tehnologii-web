@@ -4,7 +4,7 @@ import { X, UserPlus, Mail, AlertCircle } from 'lucide-react';
 const AddMemberModal = ({ isOpen, onClose, onAdd, loading }) => {
     const [formData, setFormData] = useState({
         email: '',
-        role: 'TST',
+        role: 'MP',
     });
     const [error, setError] = useState('');
 
@@ -14,7 +14,7 @@ const AddMemberModal = ({ isOpen, onClose, onAdd, loading }) => {
 
         try {
             await onAdd(formData);
-            setFormData({ email: '', role: 'TST' });
+            setFormData({ email: '', role: 'MP' });
             onClose();
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to add member');
@@ -56,10 +56,7 @@ const AddMemberModal = ({ isOpen, onClose, onAdd, loading }) => {
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2"> Role</label>
-                        <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
-                            <option value="MP">Membru (MP)</option>
-                        </select>
-                        <p className="text-xs text-gray-500 mt-1"> MP can manage bugs and assign them. TST can report and test bugs.</p>
+
                     </div>
 
                     <div className="flex gap-3 pt-2">
