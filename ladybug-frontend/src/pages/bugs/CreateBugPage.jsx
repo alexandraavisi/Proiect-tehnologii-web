@@ -4,9 +4,11 @@ import Layout from '../../components/layout/Layout';
 import { bugService } from '../../services/bugService';
 import { projectService } from '../../services/projectService';
 import { AlertCircle, ArrowLeft, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const CreateBugPage = () => {
     const navigate = useNavigate();
+    const {user} =useAuth();
     const [searchParams] = useSearchParams();
     const projectIdFromUrl = searchParams.get('projectId');
     const [projects, setProjects] = useState([]);
@@ -21,7 +23,23 @@ const CreateBugPage = () => {
     const loadProjects = async () => {
         try {
             const data = await projectService.getAllProjects();
+
+            const testerProjects = (data.projects || []).filter(project => {
+            const isTester = project.members?.some(member => {
+                console.log('Checking member:', member.user?.id, 'Role:', member.role, 'User ID:', user?.id);
+                return member.user?.id === user?.id && member.role === 'TST';
+            });
+            
+            console.log(`Project ${project.name}: isTester =`, isTester);
+            return isTester;
+            });
+
             setProjects(data.projects || []);
+
+            if (testerProjects.length === 0) {
+                alert('You must be a Tester in at least one project to report bugs.');
+                navigate('/projects');
+            }
         } catch (error) {
             console.error('Failed to load projects:', error);
         }

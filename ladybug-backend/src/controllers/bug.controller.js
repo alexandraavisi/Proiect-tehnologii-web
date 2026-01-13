@@ -34,8 +34,8 @@ export const createBug= catchAsync(async (req, res)=>{
         }
     });
 
-    if(!membership){
-        throw ErrorFactory.forbidden('You must be a project member to report bugs');
+    if (membership.role !== 'TST') {
+        throw ErrorFactory.forbidden('Only Testers (TST) can report bugs');
     }
 
     const bug= await Bug.create({

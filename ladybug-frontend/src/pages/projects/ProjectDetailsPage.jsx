@@ -8,6 +8,7 @@ import { ArrowLeft, Users, Bug, Settings, Plus, UserPlus, UserMinus, Globe, Lock
 import { useAuth } from "../../context/AuthContext";
 import { activityService } from '../../services/activityService';
 import ActivityFeed from '../../components/ActivityFeed';
+import EditProjectModal from '../../components/modals/EditProjectModal';
 
 const ProjectDetailsPage = () => {
     const {id} = useParams();
@@ -20,6 +21,8 @@ const ProjectDetailsPage = () => {
     const [addMemberLoading, setAddMemberLoading] = useState(false);
     const [activities, setActivities] = useState([]);
     const [activitiesLoading, setActivitiesLoading] = useState(true);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editLoading, setEditLoading] = useState(false);
 
     useEffect(() => {
         loadProject();
@@ -74,6 +77,19 @@ const ProjectDetailsPage = () => {
         await loadProject();
     } catch (err) {
         alert(err.response?.data?.message || 'Failed to join project');
+    }
+    };
+
+    const handleUpdateProject = async (projectData) => {
+    setEditLoading(true);
+    try {
+        await projectService.updateProject(id, projectData);
+        await loadProject();
+        setShowEditModal(false);
+    } catch (err) {
+        throw err; 
+    } finally {
+        setEditLoading(false);
     }
     };
 
@@ -167,12 +183,16 @@ const ProjectDetailsPage = () => {
                             </div>
                         </div>
                     </div>
-                    {isCreator&& (
-                        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                            <Settings className="w-5 h-5"/>
-                            Settings
+                    {(project.creatorId === user?.id) && (
+                        <button
+                            onClick={() => setShowEditModal(true)}
+                            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                        >
+                            <Settings className="w-5 h-5" />
+                            Edit Project
                         </button>
                     )}
+
                 </div>
             </div>
 
@@ -297,13 +317,15 @@ const ProjectDetailsPage = () => {
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
                     <div className="space-y-3">
-                        <Link
-                            to={`/bugs/new?projectId=${id}`}
-                            className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition"
-                        >
-                            <Plus className="w-5 h-5 text-red-600"/>
-                            <span className="font-medium text-gray-900">Report Bug</span>
-                        </Link>
+                        {project.membership?.role === 'TST' && (
+                            <Link
+                                to={`/bugs/new?projectId=${id}`}
+                                className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-red-300 hover:bg-red-50 transition"
+                            >
+                                <Plus className="w-5 h-5 text-red-600" />
+                                <span className="font-medium text-gray-900">Report Bug</span>
+                            </Link>
+                        )}
                         <Link
                             to={`/bugs?projectId=${id}`}
                             className="flex items-center gap-3 p-4 border border-gray-200  rounded-lg hover:border-red-300 hover:bg-red-50 transition"
@@ -326,6 +348,15 @@ const ProjectDetailsPage = () => {
                 onAdd={handleAddMember}
                 loading={addMemberLoading}
             />
+
+            <EditProjectModal
+                isOpen={showEditModal}
+                onClose={() => setShowEditModal(false)}
+                onUpdate={handleUpdateProject}
+                project={project}
+                loading={editLoading}
+            />
+
         </Layout>
     );
 };

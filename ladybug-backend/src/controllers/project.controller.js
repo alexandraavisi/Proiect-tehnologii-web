@@ -190,18 +190,35 @@ export const updateProject = catchAsync(async(req, res) => {
     const {id} = req.params;
     const {name, description, repoUrl, isPublic} = req.body;
 
+    console.log('🔧 UPDATE REQUEST:');
+    console.log('Project ID:', id);
+    console.log('Body:', req.body);
+    console.log('Name:', name);
+    console.log('Description:', description);
+    console.log('RepoUrl:', repoUrl);
+
     const project = await Project.findByPk(id);
 
     if(!project) {
         throw ErrorFactory.notFound('Project not found');
     }
 
+    console.log('📦 Project BEFORE update:', project.toJSON());
+
     if(name) project.name = name;
     if(description) project.description = description;
     if(repoUrl) project.repoUrl = repoUrl;
     if(isPublic !== undefined) project.isPublic = isPublic;
 
+    console.log('📝 Project AFTER changes:', project.toJSON());
+
     await project.save();
+
+    console.log('✅ Project SAVED to DB');
+
+    // Verifică în DB
+    const savedProject = await Project.findByPk(id);
+    console.log('🔍 Project from DB:', savedProject.toJSON());
 
     await logActivity(
         project.id,
