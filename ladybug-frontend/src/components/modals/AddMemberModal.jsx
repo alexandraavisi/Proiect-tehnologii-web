@@ -56,7 +56,7 @@ const AddMemberModal = ({ isOpen, onClose, onAdd, loading }) => {
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2"> Role</label>
-
+                        <input type='text' value='Member (MP)' disabled className='w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed'/> <p className="text-xs text-gray-500 mt-1"> MP can manage bugs and assign them.</p>
                     </div>
 
                     <div className="flex gap-3 pt-2">
