@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
 import { bugAssignmentService } from '../../services/bugAssignmentService';
 import { Clock, CheckCircle, XCircle, AlertCircle, User, Calendar, MessageSquare } from 'lucide-react';
+import { all } from 'axios';
 
 const AssignmentsPage = () => {
     const [assignments, setAssignments] = useState([]);
+    const [allAssignments, setAllAssignments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('pending'); // pending, accepted, rejected, all
     const [actionLoading, setActionLoading] = useState(null);
@@ -19,19 +21,28 @@ const AssignmentsPage = () => {
     const loadAssignments = async () => {
         setLoading(true);
         try {
-        let data;
-        if (filter === 'pending') {
-            data = await bugAssignmentService.getMyPendingAssignments();
-        } else if (filter === 'all') {
-            data = await bugAssignmentService.getMyAssignments();
-        } else {
-            data = await bugAssignmentService.getMyAssignments(filter.toUpperCase());
-        }
-        setAssignments(data.assignments || []);
+            const allData = await bugAssignmentService.getMyAssignments();
+            setAllAssignments(allData.assignments || []);
+            
+            let displayData;
+            if (filter === 'pending') {
+            displayData = await bugAssignmentService.getMyPendingAssignments();
+            } else if (filter === 'all') {
+            displayData = allData;
+            } else {
+            const filteredAssignments = (allData.assignments || []).filter(
+                a => a.status === filter.toUpperCase()
+            );
+            displayData = { assignments: filteredAssignments };
+            }
+            
+            setAssignments(displayData.assignments || []);
         } catch (error) {
-        console.error('Failed to load assignments:', error);
+            console.error('Failed to load assignments:', error);
+            setAllAssignments([]);
+            setAssignments([]);
         } finally {
-        setLoading(false);
+            setLoading(false);
         }
     };
 
@@ -92,9 +103,9 @@ const AssignmentsPage = () => {
         return <Icon className="w-5 h-5" />;
     };
 
-    const pendingCount = assignments.filter(a => a.status === 'PENDING').length;
-    const acceptedCount = assignments.filter(a => a.status === 'ACCEPTED').length;
-    const rejectedCount = assignments.filter(a => a.status === 'REJECTED').length;
+    const pendingCount = allAssignments.filter(a => a.status === 'PENDING').length;
+    const acceptedCount = allAssignments.filter(a => a.status === 'ACCEPTED').length;
+    const rejectedCount = allAssignments.filter(a => a.status === 'REJECTED').length;
 
     if (loading) {
         return (

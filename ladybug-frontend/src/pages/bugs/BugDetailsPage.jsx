@@ -4,7 +4,8 @@ import Layout from '../../components/layout/Layout';
 import { bugService } from '../../services/bugService';
 import { useAuth } from '../../context/AuthContext';
 import AssignBugModal from '../../components/modals/AssignBugModal';
-import { ArrowLeft, AlertCircle, User, Calendar, Github, CheckCircle, XCircle, AlertTriangle,Clock, Edit, Trash2} from 'lucide-react';
+import { ArrowLeft, AlertCircle, User, UserPlus, Calendar, Github, CheckCircle, XCircle, AlertTriangle,Clock, Edit, Trash2, MessageSquare} from 'lucide-react';
+import { bugAssignmentService } from '../../services/bugAssignmentService';
 
 const BugDetailsPage = () => {
     const { id } = useParams();
@@ -16,6 +17,8 @@ const BugDetailsPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [actionLoading, setActionLoading] = useState(false);
+    const [assignmentHistory, setAssignmentHistory] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(true);
 
     useEffect(() => {
         loadBug();
@@ -23,12 +26,18 @@ const BugDetailsPage = () => {
 
     const loadBug = async () => {
         try {
-        const data = await bugService.getBugById(id);
-        setBug(data.bug);
+            const [bugData, historyData] = await Promise.all([
+            bugService.getBugById(id),
+            bugAssignmentService.getBugHistory(id).catch(() => ({ assignments: [] }))
+            ]);
+            
+            setBug(bugData.bug);
+            setAssignmentHistory(historyData.assignments || []);
         } catch (err) {
-        setError(err.response?.data?.message || 'Failed to load bug');
+            setError(err.response?.data?.message || 'Failed to load bug');
         } finally {
-        setLoading(false);
+            setLoading(false);
+            setHistoryLoading(false);
         }
     };
 
@@ -152,6 +161,15 @@ const BugDetailsPage = () => {
     const isAssignee = bug.assignee?.userId === user?.id;
     const canClose = bug.reporter?.userId === user?.id || bug.project?.creatorId === user?.id;
 
+    console.log('🔍 Bug Details Debug:');
+    console.log('Is Creator:', bug.project?.membership?.isCreator);
+    console.log('Bug Status:', bug.status);
+    console.log('Has Assignee:', !!bug.assigneeId);
+    console.log('Assignee ID:', bug.assigneeId);
+    console.log('Project:', bug.project);
+    console.log('Membership:', bug.project?.membership);
+    console.log('User:', user);
+
     return (
         <Layout>
         <button
@@ -182,13 +200,16 @@ const BugDetailsPage = () => {
             </div>
 
             <div className="flex gap-2">
-                {bug.project?.membership?.isCreator && !bug.assigneeId && bug.status === 'REPORTED' && (
+                {bug.project?.creatorId === user?.id && 
+                    !bug.assigneeId && 
+                    (bug.status === 'REPORTED' || bug.status === 'ASSIGNED') && (
                     <button
-                    onClick={() => setShowAssignModal(true)}
-                    disabled={actionLoading}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                        onClick={() => setShowAssignModal(true)}
+                        disabled={actionLoading}
+                        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2"
                     >
-                    Assign to MP
+                        <UserPlus className="w-5 h-5" />
+                        Assign to MP
                     </button>
                 )}
 
@@ -201,6 +222,7 @@ const BugDetailsPage = () => {
                     Self Assign
                 </button>
                 )}
+
                 {isAssignee && bug.status !== 'RESOLVED' && bug.status !== 'CLOSED' && (
                 <button
                     onClick={handleResolve}
@@ -210,6 +232,7 @@ const BugDetailsPage = () => {
                     Mark Resolved
                 </button>
                 )}
+
                 {canClose && bug.status !== 'CLOSED' && (
                 <button
                     onClick={handleClose}
@@ -217,6 +240,16 @@ const BugDetailsPage = () => {
                     className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
                 >
                     Close
+                </button>
+                )}
+
+                {bug.project?.creatorId === user?.id && (
+                <button
+                    onClick={handleDelete}
+                    disabled={actionLoading}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                >
+                    Delete
                 </button>
                 )}
             </div>
@@ -287,6 +320,68 @@ const BugDetailsPage = () => {
                 <p className="text-sm text-gray-600">{bug.project.description}</p>
                 </div>
             </Link>
+            </div>
+        )}
+
+        {assignmentHistory.length > 0 && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-4">Assignment History</h2>
+            {historyLoading ? (
+                <div className="text-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto"></div>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                {assignmentHistory.map((assignment) => (
+                    <div
+                    key={assignment.id}
+                    className="flex items-start gap-3 p-4 border border-gray-200 rounded-lg"
+                    >
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        assignment.status === 'ACCEPTED' ? 'bg-green-100 text-green-600' :
+                        assignment.status === 'REJECTED' ? 'bg-red-100 text-red-600' :
+                        'bg-yellow-100 text-yellow-600'
+                    }`}>
+                        {assignment.status === 'ACCEPTED' && <CheckCircle className="w-5 h-5" />}
+                        {assignment.status === 'REJECTED' && <XCircle className="w-5 h-5" />}
+                        {assignment.status === 'PENDING' && <Clock className="w-5 h-5" />}
+                    </div>
+                    <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            assignment.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                            assignment.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                        }`}>
+                            {assignment.status}
+                        </span>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                        <span className="flex items-center gap-1">
+                            <User className="w-4 h-4" />
+                            Assigned to: {assignment.assignee?.user?.name}
+                        </span>
+                        <span className="flex items-center gap-1">
+                            By: {assignment.assigner?.user?.name}
+                        </span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(assignment.assignedAt).toLocaleString()}
+                        </div>
+                        {assignment.status === 'REJECTED' && assignment.rejectionReason && (
+                        <div className="mt-2 bg-red-50 border border-red-200 rounded p-2">
+                            <div className="flex items-start gap-2">
+                            <MessageSquare className="w-4 h-4 text-red-600 mt-0.5" />
+                            <p className="text-sm text-red-700">{assignment.rejectionReason}</p>
+                            </div>
+                        </div>
+                        )}
+                    </div>
+                    </div>
+                ))}
+                </div>
+            )}
             </div>
         )}
 

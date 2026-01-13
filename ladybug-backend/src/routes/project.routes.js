@@ -31,7 +31,7 @@ router.post('/:id/members', authenticateToken, validateUUID, validateAddMember, 
 router.delete('/:id/members/:memberId', authenticateToken, isProjectCreator, removeMember);
 router.post('/:id/join', authenticateToken, validateUUID, joinAsTester);
 
-router.get('/:id', authenticateToken, validateUUID, isProjectMember, getProjectById);
+router.get('/:id', authenticateToken, validateUUID,  getProjectById);
 router.put('/:id', authenticateToken, validateUUID, validateProjectUpdate, isProjectCreator, updateProject);
 router.delete('/:id', authenticateToken, validateUUID, canDeleteProject, deleteProject);
 

@@ -6,6 +6,8 @@ import AddMemberModal from '../../components/modals/AddMemberModal';
 import AssignBugModal from '../../components/modals/AssignBugModal';
 import { ArrowLeft, Users, Bug, Settings, Plus, UserPlus, UserMinus, Globe, Lock, Github, Calendar, Crown, Shield, AlertCircle } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { activityService } from '../../services/activityService';
+import ActivityFeed from '../../components/ActivityFeed';
 
 const ProjectDetailsPage = () => {
     const {id} = useParams();
@@ -16,6 +18,8 @@ const ProjectDetailsPage = () => {
     const [error, setError] = useState('');
     const [showAddMemberModal, setShowAddMemberModal] = useState(false);
     const [addMemberLoading, setAddMemberLoading] = useState(false);
+    const [activities, setActivities] = useState([]);
+    const [activitiesLoading, setActivitiesLoading] = useState(true);
 
     useEffect(() => {
         loadProject();
@@ -23,12 +27,18 @@ const ProjectDetailsPage = () => {
 
     const loadProject = async () => {
         try {
-            const data = await projectService.getProjectById(id);
-            setProject(data.project);
+            const [projectData, activitiesData] = await Promise.all([
+            projectService.getProjectById(id),
+            activityService.getProjectActivities(id, 15)
+            ]);
+            
+            setProject(projectData.project);
+            setActivities(activitiesData.activities || []);
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to load project');
-        }finally {
+        } finally {
             setLoading(false);
+            setActivitiesLoading(false);
         }
     };
 
@@ -295,7 +305,7 @@ const ProjectDetailsPage = () => {
                             <span className="font-medium text-gray-900">Report Bug</span>
                         </Link>
                         <Link
-                            to={`/projects/${id}/bugs`}
+                            to={`/bugs?projectId=${id}`}
                             className="flex items-center gap-3 p-4 border border-gray-200  rounded-lg hover:border-red-300 hover:bg-red-50 transition"
                         >
                             <Bug className="w-5 h-5 text-red-600"/>
@@ -303,6 +313,11 @@ const ProjectDetailsPage = () => {
                         </Link>
                     </div>
                 </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
+                <ActivityFeed activities={activities} loading={activitiesLoading} />
             </div>
 
             <AddMemberModal

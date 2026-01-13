@@ -6,17 +6,23 @@ import sequelize from '../config/database.js';
 
 export const getProjectActivities = catchAsync(async(req, res) => {
     const {id: projectId} = req.params;
-    const {limit = 50} = req.query;
+    const {limit = 20} = req.query;
     const userId = req.user.id;
+
+    const project = await Project.findByPk(projectId);
+
+    if (!project) {
+        throw ErrorFactory.notFound('Project not found');
+    }
 
     const membership = await ProjectMember.findOne({
         where: {
-            projectId,
-            userId
+            projectId: projectId,
+            userId: userId
         }
     });
 
-    if(!membership) {
+    if(!project.isPublic && !membership) {
         throw ErrorFactory.forbidden('Access denied. You are not a member of this project.');
     }
 
@@ -27,11 +33,6 @@ export const getProjectActivities = catchAsync(async(req, res) => {
                 model: User,
                 as: 'user',
                 attributes: ['id', 'name', 'email']
-            },
-            {
-                model:Bug,
-                as: 'bug',
-                attributes: ['id', 'title', 'status']
             }
         ],
         order: [['createdAt', 'DESC']],
