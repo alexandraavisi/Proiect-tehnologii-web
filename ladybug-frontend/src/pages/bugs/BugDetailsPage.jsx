@@ -3,12 +3,15 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import Layout from '../../components/layout/Layout';
 import { bugService } from '../../services/bugService';
 import { useAuth } from '../../context/AuthContext';
+import AssignBugModal from '../../components/modals/AssignBugModal';
 import { ArrowLeft, AlertCircle, User, Calendar, Github, CheckCircle, XCircle, AlertTriangle,Clock, Edit, Trash2} from 'lucide-react';
 
 const BugDetailsPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const [showAssignModal, setShowAssignModal] = useState(false);
+    const [assignLoading, setAssignLoading] = useState(false);
     const [bug, setBug] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -83,6 +86,19 @@ const BugDetailsPage = () => {
         setActionLoading(false);
         }
     };
+
+    const handleAssignBug = async (assigneeId) => {
+        setAssignLoading(true);
+        try {
+            await bugService.assignBugToMember(id, assigneeId);
+            await loadBug();
+            setShowAssignModal(false);
+        } catch (err) {
+            throw err; 
+        } finally {
+            setAssignLoading(false);
+        }
+        };
 
     const getSeverityColor = (severity) => {
         const colors = {
@@ -166,6 +182,16 @@ const BugDetailsPage = () => {
             </div>
 
             <div className="flex gap-2">
+                {bug.project?.membership?.isCreator && !bug.assigneeId && bug.status === 'REPORTED' && (
+                    <button
+                    onClick={() => setShowAssignModal(true)}
+                    disabled={actionLoading}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                    >
+                    Assign to MP
+                    </button>
+                )}
+
                 {!bug.assigneeId && bug.status === 'REPORTED' && (
                 <button
                     onClick={handleSelfAssign}
@@ -263,6 +289,15 @@ const BugDetailsPage = () => {
             </Link>
             </div>
         )}
+
+        <AssignBugModal
+            isOpen={showAssignModal}
+            onClose={() => setShowAssignModal(false)}
+            onAssign={handleAssignBug}
+            members={bug.project?.members}
+            loading={assignLoading}
+        />
+
         </Layout>
     );
 };
