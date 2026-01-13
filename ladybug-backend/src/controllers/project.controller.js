@@ -153,7 +153,7 @@ export const getProjectById = catchAsync(async (req, res) => {
         }
     });
 
-    if (!membership && !project.isPublic) {
+    if (!project.isPublic && !membership) {
         throw ErrorFactory.forbidden('Access denied. Project is private.');
     }
 

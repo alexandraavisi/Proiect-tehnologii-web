@@ -3,10 +3,14 @@ import { Link } from "react-router-dom";
 import Layout from '../../components/layout/Layout';
 import { FolderKanban, AlertCircle, Users, Activity, Plus, TrendingUp } from "lucide-react";
 import api from '../../services/api';
+import { activityService } from '../../services/activityService';
+import ActivityFeed from '../../components/ActivityFeed';
 
 const DashboardPage = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [activities, setActivities] = useState([]);
+    const [activitiesLoading, setActivitiesLoading] = useState(true);
 
     useEffect(() => {
         loadStats();
@@ -14,11 +18,17 @@ const DashboardPage = () => {
 
     const loadStats = async () => {
         try {
-            const response = await api.get('/activities/my-stats');
-            setStats(response.data.stats || {
+            const [statsData, activitiesData] = await Promise.all([
+            activityService.getMyStats(),
+            activityService.getMyActivityFeed(10)
+            ]);
+            
+            setStats(statsData.stats || {
             projects: { total: 0, asCreator: 0, asMember: 0 },
             bugs: { reported: 0, assigned: 0, resolved: 0 }
             });
+            
+            setActivities(activitiesData.activities || []);
         } catch (error) {
             console.error('Failed to load stats:', error);
             setStats({
@@ -27,6 +37,7 @@ const DashboardPage = () => {
             });
         } finally {
             setLoading(false);
+            setActivitiesLoading(false);
         }
     };
 
@@ -114,11 +125,8 @@ const DashboardPage = () => {
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
-                <div className="text-center py-12 text-gray-500">
-                    <Activity className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                    <p>No recent activity</p>
-                </div>
-            </div>   
+                <ActivityFeed activities={activities} loading={activitiesLoading} />
+            </div>
         </Layout>
     );
 };

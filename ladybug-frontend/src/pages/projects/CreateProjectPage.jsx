@@ -76,29 +76,6 @@ const CreateProjectPage=() =>{
                             <p className="text-xs text-gray-500 mt-1">Optional: Link to your GitHub repository</p>
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-3">Visibility</label>
-                            <div className="space-y-3">
-                                <label className="flex items-start gap-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-red-300 transition">
-                                    <input type="radio" name="isPublic" checked={formData.isPublic===true} onChange={()=> setFormData({...formData, isPublic: true})} className="mt-1"/>
-                                    <div>
-                                        <div className="flex items-center gap-2 font-medium text-gray-900 mb-1">
-                                            <Globe className="w-5 h-5"/> Public
-                                        </div>
-                                        <p className="text-sm text-gray-600">Anyone can see this project and request to join as a tester</p>
-                                    </div>
-                                </label>
-                                <label className="flex items-start gap-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-red-300 transition">
-                                    <input type="radio" name="isPublic" checked={formData.isPublic===false} onChange={()=> setFormData({...formData, isPublic:false})} className="mt-1"/>
-                                    <div>
-                                        <div className="flex items-center gap-2 font-medium text-gray-900 mb-1">
-                                            <Lock className="w-5 h-5"/> Private
-                                        </div>
-                                        <p className="text-sm text-gray-600">Only invited members can see and access this project</p>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
 
                         <div className="flex gap-3 pt-4">
                             <button type="submit" disabled={loading} className="flex-1 bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 focus:ring-4 focus:ring-red-200 disabled:opacity-50 disabled:cursor-not-allowed transition">

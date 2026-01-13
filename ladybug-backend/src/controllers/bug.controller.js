@@ -80,59 +80,72 @@ export const createBug= catchAsync(async (req, res)=>{
     });
 });
 
-export const getAllBugs = catchAsync(async (req,res)=>{
-    const {projectId} = req.query;
-    const userId = req.user.id;
+export const getAllBugs = catchAsync(async (req, res) => {
+  const { projectId } = req.query;
+  const userId = req.user.id;
 
-    if(!projectId){
-        throw ErrorFactory.badRequest('Project ID is required');
-    }
+  const whereClause = {};
+  
+  if (projectId) {
+    whereClause.projectId = projectId;
+  }
 
-    const membership = await ProjectMember.findOne({
-        where:{
-            projectId,
-            userId
-        }
-    });
-
-    if(!membership){
-        throw ErrorFactory.forbidden('Access denied. You are not a member of this project.');
-    }
-
-    const bugs= await Bug.findAll({
-        where: {projectId},
+  const bugs = await Bug.findAll({
+    where: whereClause,
+    include: [
+      {
+        model: ProjectMember,
+        as: 'reporter',
         include: [
-            {
-                model: ProjectMember,
-                as: 'reporter',
-                include: [
-                    {
-                        model: User,
-                        as: 'user',
-                        attributes: ['id','name','email']
-                    }
-                ]
-            },
-            {
-                model: ProjectMember,
-                as: 'assignee',
-                include: [
-                    {
-                        model: User,
-                        as:'user',
-                        attributes: ['id','name','email']
-                    }
-                ]
-            }
-        ],
-        order:[['createdAt','DESC']]
-    });
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'name', 'email']
+          }
+        ]
+      },
+      {
+        model: ProjectMember,
+        as: 'assignee',
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'name', 'email']
+          }
+        ]
+      },
+      {
+        model: Project,
+        as: 'project',
+        attributes: ['id', 'name', 'isPublic'],
+        include: [
+          {
+            model: ProjectMember,
+            as: 'members',
+            where: { userId },
+            required: false
+          }
+        ]
+      }
+    ],
+    order: [['createdAt', 'DESC']]
+  });
 
-    res.json({
-        success: true,
-        count: bugs.length,
-        bugs
-    });
+  const accessibleBugs = bugs.filter(bug => {
+    if (!bug.project) return false;
+    
+    const isMember = bug.project.members && bug.project.members.length > 0;
+    const isPublicProject = bug.project.isPublic;
+    
+    return isMember || isPublicProject;
+  });
+
+  res.json({
+    success: true,
+    count: accessibleBugs.length,
+    bugs: accessibleBugs
+  });
 });
 
 export const getBugById = catchAsync( async (req,res)=>{
@@ -140,34 +153,47 @@ export const getBugById = catchAsync( async (req,res)=>{
     const userId= req.user.id;
 
     const bug = await Bug.findByPk(id,{
-        include:[
+        include: [
+        {
+            model: ProjectMember,
+            as: 'reporter',
+            include: [
             {
-                model: Project,
-                as: 'project'
-            },
+                model: User,
+                as: 'user',
+                attributes: ['id', 'name', 'email']
+            }
+            ]
+        },
+        {
+            model: ProjectMember,
+            as: 'assignee',
+            include: [
+            {
+                model: User,
+                as: 'user',
+                attributes: ['id', 'name', 'email']
+            }
+            ]
+        },
+        {
+            model: Project,
+            as: 'project',
+            attributes: ['id', 'name', 'description', 'isPublic', 'creatorId'],
+            include: [
             {
                 model: ProjectMember,
-                as: 'reporter',
-                include:[
-
-                    {
-                        model: User,
-                        as: 'user',
-                        attributes: ['id', 'name', 'email']
-                    }
-                ]
-            },
-            {
-                model: ProjectMember,
-                as: 'assignee',
-                include:[
-                    {
-                        model: User,
-                        as: 'user',
-                        attributes: ['id', 'name', 'email']
-                    }
+                as: 'members',
+                include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id', 'name', 'email']
+                }
                 ]
             }
+            ]
+        }
         ]
     });
 
@@ -178,12 +204,21 @@ export const getBugById = catchAsync( async (req,res)=>{
     const membership = await ProjectMember.findOne({
         where: {
             projectId: bug.projectId,
-            userId
+            userId: userId
         }
     });
 
-    if(!membership){
-        throw ErrorFactory.forbidden('Access denied. You are not a member of this project.');
+    const bugData = bug.toJSON();
+
+    if (bugData.project && membership) {
+        bugData.project.membership = {
+        id: membership.id,
+        role: membership.role,
+        isCreator: membership.isCreator,
+        joinedAt: membership.joinedAt
+        };
+    } else if (bugData.project) {
+        bugData.project.membership = null;
     }
 
     res.json({
