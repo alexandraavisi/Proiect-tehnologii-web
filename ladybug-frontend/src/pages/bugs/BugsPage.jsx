@@ -13,6 +13,7 @@ const BugsPage = () => {
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [canReportBug, setCanReportBug] = useState(false);
     const [filters, setFilters] =useState({
         projectId: projectId || '',
         status: '',
@@ -36,8 +37,17 @@ const BugsPage = () => {
             bugService.getAllBugs(params),
             projectService.getAllProjects(),
             ]);
+
             setBugs(bugsData.bugs || []);
             setProjects(projectsData.projects || []);
+
+            const isTesterInAnyProject = (projectsData.projects || []).some(
+            project => project.members?.some(
+                member => member.role === 'TST' && member.userId === user?.id
+            )
+            );
+            setCanReportBug(isTesterInAnyProject);
+
         } catch (error) {
             console.error('Failed to load data:', error);
             setBugs([]);
@@ -98,13 +108,15 @@ const BugsPage = () => {
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Bugs</h1>
                     <p className="text-gray-600">Track and manage all bugs</p>
                 </div>
-                <Link
-                    to="/bugs/new"
-                    className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                >
-                    <Plus className="w-5 h-5" />
-                    Report Bug
-                </Link>
+                {canReportBug && (
+                    <Link
+                        to="/bugs/new"
+                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                    >
+                        <Plus className="w-5 h-5" />
+                        Report Bug
+                    </Link>
+                )}
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">

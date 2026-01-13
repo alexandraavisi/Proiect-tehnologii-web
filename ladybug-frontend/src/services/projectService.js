@@ -1,3 +1,4 @@
+import { data } from "react-router-dom";
 import api from "./api";
 
 export const projectService = {
@@ -20,8 +21,8 @@ export const projectService = {
     },
 
     //Update project
-    updateProject: async (id) => {
-        const response = await api.delete(`/projects/${id}`);
+    updateProject: async (id, data) => {
+        const response = await api.put(`/projects/${id}`, data);
         return response.data;
     },
 
