@@ -79,7 +79,7 @@ const RegisterPage=() =>{
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
                         <div className="relative">
-                            <Lock className="absolute left-3 top-1/2-translate-y-1/2 w-5 h-5 text-gray-400"/>
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"/>
                             <input type="password" name="password" value={formData.password} onChange={handleChange} required className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition" placeholder="********"/>
                         </div>
                     </div>
