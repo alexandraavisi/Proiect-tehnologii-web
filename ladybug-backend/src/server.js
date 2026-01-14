@@ -61,7 +61,7 @@ const startServer = async () => {
             process.exit(1);
         }
 
-        app.listen(PORT, () => {
+        app.listen(PORT,'0.0.0.0',  () => {
             console.log('LadyBug API Server Started');
             console.log(`Server running on: http://localhost:${PORT}`)
             console.log('Database: Connected')
