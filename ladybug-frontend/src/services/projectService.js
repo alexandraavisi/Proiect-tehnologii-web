@@ -5,6 +5,8 @@ export const projectService = {
     //Get all projects
     getAllProjects: async () => {
         const response = await api.get('/projects');
+        console.log("AICISA");
+        console.log(response.data);
         return response.data;
     },
 

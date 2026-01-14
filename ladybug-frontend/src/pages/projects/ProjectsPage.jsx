@@ -3,25 +3,48 @@ import {Link} from 'react-router-dom';
 import Layout from "../../components/layout/Layout";
 import {projectService} from '../../services/projectService';
 import {FolderKanban, Plus, Users, Bug, Calendar, Search, Filter, Globe, Lock} from 'lucide-react';
+import { bugService } from "../../services/bugService";
 
 const ProjectsPage=() =>{
     const [projects, setProjects]= useState([]);
     const [loading, setLoading]= useState(true);
     const [searchTerm, setSearchTerm]= useState('');
     const [filter, setFilter]= useState('all');
+    const [bugCountByProjectId, setBugCountByProjectId] = useState({});
 
     useEffect(()=>{
         loadProjects();
+        loadBugCounts();
     },[]);
 
     const loadProjects= async ()=>{
         try{
             const data=await projectService.getAllProjects();
+            console.log("AOLEEEU");
+            console.log(data.projects);
             setProjects(data.projects || []);
         }catch(error){
             console.error('Failed to load projects:', error);
         }finally{
             setLoading(false);
+        }
+    };
+
+    const loadBugCounts = async () => {
+        try {
+            const data = await bugService.getAllBugs();
+            const bugs = data.bugs || [];
+
+            const counts = bugs.reduce((acc, bug) => {
+                if (bug.projectId) {
+                    acc[bug.projectId] = (acc[bug.projectId] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
+            setBugCountByProjectId(counts);
+        } catch (error) {
+            console.error('Failed to load bug counts:', error);
         }
     };
 
@@ -67,10 +90,10 @@ const ProjectsPage=() =>{
 
             <div className="flex items-center gap-4 text-sm text-gray-500">
                 <span className="flex items-center gap-1">
-                    <Users className="w-4 h-4" /> {project.memberCount || 0} members
+                    <Users className="w-4 h-4" /> {(project.members?.length ?? project.memberCount ?? 0)} members
                 </span>
                 <span className="flex items-center gap-1">
-                    <Bug className="w-4 h-4"/> {project.bugCount || 0} bugs
+                    <Bug className="w-4 h-4"/> {bugCountByProjectId[project.id] ?? 0} bugs
                 </span>
                 <span className="flex items-center gap-1">
                     <Calendar className="w-4 h-4"/> {new Date(project.createdAt).toLocaleDateString()}
