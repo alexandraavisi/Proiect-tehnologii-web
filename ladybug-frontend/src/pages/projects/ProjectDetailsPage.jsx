@@ -250,7 +250,7 @@ const ProjectDetailsPage = () => {
                         </div>
                         <div>
                             <p className="text-2xl font-bold text-gray-900">
-                                {project.bugs?.filter(b => b.status === 'RESOLVED').length || 0}
+                                {project.bugs?.filter(b => (b.status === 'RESOLVED' || b.status === 'CLOSED' )).length || 0}
                             </p>
                             <p className="text-sm text-gray-600">Resolved</p>
                         </div>
@@ -295,7 +295,7 @@ const ProjectDetailsPage = () => {
                                     : 'bg-green-100 text-green-700'
                                 }`}
                             >
-                                {member.role === 'MP' ? 'Membru' : 'Tester'}
+                                {member.role === 'MP' ? 'Member' : 'Tester'}
                             </span>
                             {member.isCreator && (
                                 <Crown className="w-4 h-4 text-yellow-500" />
@@ -338,7 +338,7 @@ const ProjectDetailsPage = () => {
             </div>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mt-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Recent Activity</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">History</h2> 
                 <ActivityFeed activities={activities} loading={activitiesLoading} />
             </div>
 

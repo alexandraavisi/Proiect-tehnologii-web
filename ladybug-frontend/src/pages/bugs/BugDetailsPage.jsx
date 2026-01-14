@@ -28,43 +28,37 @@ const BugDetailsPage = () => {
     }, [id]);
 
     const checkSelfAssignPermission = async (projectId) => {
-        try {
-            // 1. Get logged user
-            const user = await authService.getCurrentUser();
-            if (!user?.id) {
-                setCanSelfAssign(false);
-                return;
-            }
+    try {
+        const userResponse = await authService.getCurrentUser();
+        const currentUser = userResponse.user;
 
-            // 2. Get project by ID
-            const project = await projectService.getProjectById(projectId);
-            if (!project?.members) {
-                setCanSelfAssign(false);
-                return;
-            }
+        console.log('CURRENT USER:', currentUser);
 
-            // 3. Find user in project members
-            const member = project.members.find(
-                (m) => m.userId === user.id
-            );
+        const response = await projectService.getProjectById(projectId);
+        const project = response.project;
 
-            // 4. Tester cannot self assign
-            if (member && member.role === 'TST') {
-                setCanSelfAssign(false);
-            } else {
-                setCanSelfAssign(true);
-            }
-        } catch (error) {
-            console.error('Self-assign permission check failed', error);
-            setCanSelfAssign(false);
-        } finally {
-            setLoading(false);
-        }
-    };
+        console.log('PROJECT MEMBERS:', project?.members);
+
+        const member = project?.members?.find(
+            (m) =>
+                m.userId === currentUser.id ||
+                m.user?.id === currentUser.id
+        );
+
+        console.log('FOUND MEMBER:', member);
+        console.log('MEMBER ROLE:', member?.role);
+
+        setCanSelfAssign(member?.role === 'MP');
+    } catch (error) {
+        console.error('Self-assign permission check failed', error);
+        setCanSelfAssign(false);
+    }
+};
+
 
     useEffect(() => {
     if (bug?.project?.id) {
-        setLoading(true);
+        //setLoading(true);
         checkSelfAssignPermission(bug.project.id);
     }
 }, [bug?.project?.id]);
@@ -249,10 +243,10 @@ const BugDetailsPage = () => {
                     </button>
                 )}
 
-                {!bug.assigneeId && bug.status === 'REPORTED' && (
+                {!bug.assigneeId && bug.status === 'REPORTED' && canSelfAssign && (
                 <button
                     onClick={handleSelfAssign}
-                    disabled={actionLoading || !canSelfAssign}
+                    disabled={actionLoading}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
                     Self Assign
