@@ -76,7 +76,7 @@ export const getCurrentUser = catchAsync( async (req, res)=>{
             name: user.name,
             email: user.email,
             createdAt: user.createdAt,
-            updatedAt: user.updatedAt
+            updatedAt: user.updatedAt,
         }
     });
 });

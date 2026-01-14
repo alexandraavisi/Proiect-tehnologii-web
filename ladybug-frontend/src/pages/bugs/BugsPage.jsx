@@ -4,12 +4,14 @@ import Layout  from "../../components/layout/Layout";
 import {bugService} from '../../services/bugService';
 import { projectService } from "../../services/projectService";
 import { AlertCircle, Plus, Search, Filter, AlertTriangle, CheckCircle, Clock, User, Calendar } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const BugsPage = () => {
     const [searchParams] = useSearchParams();
     const projectId = searchParams.get('projectId');
 
     const [bugs, setBugs] = useState([]);
+    const user = useAuth();
     const [projects, setProjects] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -40,6 +42,8 @@ const BugsPage = () => {
 
             setBugs(bugsData.bugs || []);
             setProjects(projectsData.projects || []);
+            console.log("TESTTSASDASD");
+            console.log(projectsData.project);
 
             const isTesterInAnyProject = (projectsData.projects || []).some(
             project => project.members?.some(

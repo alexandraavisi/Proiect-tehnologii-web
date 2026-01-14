@@ -6,6 +6,8 @@ import { useAuth } from '../../context/AuthContext';
 import AssignBugModal from '../../components/modals/AssignBugModal';
 import { ArrowLeft, AlertCircle, User, UserPlus, Calendar, Github, CheckCircle, XCircle, AlertTriangle,Clock, Edit, Trash2, MessageSquare} from 'lucide-react';
 import { bugAssignmentService } from '../../services/bugAssignmentService';
+import { authService } from '../../services/authService';
+import { projectService } from '../../services/projectService';
 
 const BugDetailsPage = () => {
     const { id } = useParams();
@@ -19,10 +21,53 @@ const BugDetailsPage = () => {
     const [actionLoading, setActionLoading] = useState(false);
     const [assignmentHistory, setAssignmentHistory] = useState([]);
     const [historyLoading, setHistoryLoading] = useState(true);
+    const [canSelfAssign, setCanSelfAssign] = useState(false);
 
     useEffect(() => {
         loadBug();
     }, [id]);
+
+    const checkSelfAssignPermission = async (projectId) => {
+        try {
+            // 1. Get logged user
+            const user = await authService.getCurrentUser();
+            if (!user?.id) {
+                setCanSelfAssign(false);
+                return;
+            }
+
+            // 2. Get project by ID
+            const project = await projectService.getProjectById(projectId);
+            if (!project?.members) {
+                setCanSelfAssign(false);
+                return;
+            }
+
+            // 3. Find user in project members
+            const member = project.members.find(
+                (m) => m.userId === user.id
+            );
+
+            // 4. Tester cannot self assign
+            if (member && member.role === 'TST') {
+                setCanSelfAssign(false);
+            } else {
+                setCanSelfAssign(true);
+            }
+        } catch (error) {
+            console.error('Self-assign permission check failed', error);
+            setCanSelfAssign(false);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+    if (bug?.project?.id) {
+        setLoading(true);
+        checkSelfAssignPermission(bug.project.id);
+    }
+}, [bug?.project?.id]);
 
     const loadBug = async () => {
         try {
@@ -161,15 +206,6 @@ const BugDetailsPage = () => {
     const isAssignee = bug.assignee?.userId === user?.id;
     const canClose = bug.reporter?.userId === user?.id || bug.project?.creatorId === user?.id;
 
-    console.log('🔍 Bug Details Debug:');
-    console.log('Is Creator:', bug.project?.membership?.isCreator);
-    console.log('Bug Status:', bug.status);
-    console.log('Has Assignee:', !!bug.assigneeId);
-    console.log('Assignee ID:', bug.assigneeId);
-    console.log('Project:', bug.project);
-    console.log('Membership:', bug.project?.membership);
-    console.log('User:', user);
-
     return (
         <Layout>
         <button
@@ -216,7 +252,7 @@ const BugDetailsPage = () => {
                 {!bug.assigneeId && bug.status === 'REPORTED' && (
                 <button
                     onClick={handleSelfAssign}
-                    disabled={actionLoading}
+                    disabled={actionLoading || !canSelfAssign}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
                     Self Assign

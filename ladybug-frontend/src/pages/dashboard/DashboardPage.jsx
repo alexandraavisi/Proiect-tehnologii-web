@@ -12,7 +12,6 @@ import { projectService } from "../../services/projectService";
 const DashboardPage = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const [canReportBug, setCanReportBug] = useState(false);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activities, setActivities] = useState([]);
@@ -35,13 +34,7 @@ const DashboardPage = () => {
             });
             
             setActivities(activitiesData.activities || []);
-
-            const isTester = (projectsData.projects || []).some(
-                project => project.members?.some(
-                    member => member.role === 'TST' && member.userId === user?.id
-                )
-            );
-            setCanReportBug(isTester);
+            
         } catch (error) {
             console.error('Failed to load stats:', error);
             setStats({
@@ -96,26 +89,7 @@ const DashboardPage = () => {
                         <p className="text-sm text-red-100">Stat tracking bugs</p>
                     </div>
                 </Link>
-                {canReportBug ? (
-                    <Link
-                        to="/bugs/new"
-                        className="flex items-center gap-3 p-4 bg-white border-2 border-gray-200 rounded-xl hover:border-red-300 hover:shadow-md transition"
-                    >
-                        <AlertCircle className="w-6 h-6 text-red-600"/>
-                        <div>
-                        <p className="font-semibold text-gray-900">Report New Bug</p>
-                        <p className="text-sm text-gray-600">Create bug report</p>
-                        </div>
-                    </Link>
-                    ) : (
-                    <div className="flex items-center gap-3 p-4 bg-gray-100 border-2 border-gray-200 rounded-xl opacity-60 cursor-not-allowed">
-                        <AlertCircle className="w-6 h-6 text-gray-400"/>
-                        <div>
-                        <p className="font-semibold text-gray-600">Report New Bug</p>
-                        <p className="text-sm text-gray-500">Testers only</p>
-                        </div>
-                    </div>
-                )}
+                
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
